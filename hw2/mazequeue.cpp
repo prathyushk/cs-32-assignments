@@ -56,8 +56,6 @@ bool canMove(string maze[], int nRows, int nCols, int r, int c, int dir, Coord& 
   return false;
 }
 
-// Return true if there is a path from (sr,sc) to (er,ec)
-// through the maze; return false otherwise
 bool pathExists(string maze[], int nRows, int nCols, int sr, int sc, int er, int ec)
 {
   queue<Coord> coords;
@@ -66,7 +64,6 @@ bool pathExists(string maze[], int nRows, int nCols, int sr, int sc, int er, int
   while(!coords.empty())
     {
       Coord curr = coords.front();
-      cout << "Coord: (" << curr.r() << "," << curr.c() << ")" << endl;
       coords.pop();
       if(curr.r() == er && curr.c() == ec)
 	return true;
@@ -82,25 +79,3 @@ bool pathExists(string maze[], int nRows, int nCols, int sr, int sc, int er, int
     }
   return false;
 }
-
-int main()
-{
-  string maze[10] = {
-    "XXXXXXXXXX",
-    "X........X",
-    "XX.X.XXXXX",
-    "X..X.X...X",
-    "X..X...X.X",
-    "XXXX.XXX.X",
-    "X.X....XXX",
-    "X..XX.XX.X",
-    "X...X....X",
-                    "XXXXXXXXXX"
-  };
-
-  if (pathExists(maze, 10,10, 6,4, 1,1))
-    cout << "Solvable!" << endl;
-  else
-    cout << "Out of luck!" << endl;
-}
-
