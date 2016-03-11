@@ -1,0 +1,18 @@
+bbbbb.exe
+ccccc.exe
+g1.exe
+g2.exe
+g3.exe
+g4.exe
+g5.exe
+g6.exe
+http://www.bad.com
+
+m11 ccccc.exe http://www.bad.com
+m4 explorer.exe g1.exe
+m4 explorer.exe g2.exe
+m5 explorer.exe g3.exe
+m5 explorer.exe g4.exe
+m6 bbbbb.exe http://www.bad.com
+m6 explorer.exe g5.exe
+m6 explorer.exe g6.exe

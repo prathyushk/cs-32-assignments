@@ -1,0 +1,76 @@
+1.
+a.
+
+                                   50
+
+                          20               60
+
+                   10           40            70
+
+                      15      30          65        80
+
+			    25    35             75
+
+b.
+                                   50
+
+                          15               60
+
+                   10           40            70
+
+                              25         65        80
+
+                                  35             75
+
+
+c.
+
+In-order: 10,15,20,25,30,35,40,50,60,65,70,75,80
+Pre-order: 50,20,10,15,40,30,25,35,60,70,65,80,75
+Post-order: 15,10,25,35,30,40,20,65,75,80,70,60,50
+
+2.
+a.
+removed: 10, 8
+				7
+			3		5
+	             1	   2         4
+
+
+b. {7,3,5,1,2,4}
+c.
+				5
+			3		4
+		     1     2
+{5,3,4,1,2}
+
+3.
+a.
+struct TreeNode
+{
+	int value;
+	TreeNode *left,*right,*parent; 
+};
+
+b.
+void insert(int value)
+=========================
+If the root is null, create node with left, right and parent as nullptr and set to root and return
+Starting from the root node and while the insert isnt done,
+	 check if the value is equal to the current node's, if it is then return because the value already exists
+	 if the value is less than the curent node's
+	    if the current node has a left child, set the current node to the left child
+	    or else, create a node with the value with left and right as nullptr and parent pointing to the current node and set it as the current node's left and return
+	 if the value is greater than the current node's
+	    if the current node has a right child, set the current node to the right child
+	    or else, create a node with the value with left and right as nullptr and the parent pointing to the current node and set it as the current node's right and return
+
+4.
+a. O(S + C)
+b. O(log(C) + S)
+c. O(log(C) + log(S))
+d. O(log(S))
+e. O(1)
+f. O(log(C) + S)
+g. O(Slog(S))
+h. O(Clog(S))

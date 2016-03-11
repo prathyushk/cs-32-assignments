@@ -1,0 +1,13 @@
+2. Coord does not have any comparison operators implemented. Insert checks if the key already exists and it cannot use the != operator on a Coord type while it can for int because it is defined by default. If the comparison operators were implemented, this would work.
+
+3b. In order to use just a single parameter listAll given the constraints from problem 3a, it must be possible to either print backwards where new characters are added to the left of the current string and newlines must be printed up or there must be some data passing through the return type. Since the function's return type is void, no data can be passed from the subclasses and there is no real easy solution to print backwards and from the bottom up. Therefore, having a second argument allows data passing between the calls which makes it possible to write the function.
+
+4a. The time complexity of this function is O(N^3) because there are three nested four loops each running N times. The specific operations performed in the loops are not relevant because they will only be added as lower order terms or increase the coefficient of the highest order term. Therefore, it is said that it is O of N^3.
+
+4b. The first loop runs N times. The second loop runs N(N-1)/2 times and the third loop runs N(N(N-1)/2) times which boils down to N^3 as well if the coefficients and lower order terms are ignored.
+
+5. The copy constructor causes N nodes to be visited. Then, inside the for loop, certain Map functions are called. get and erase will run an average of N/2 times however they are not embedded so the coefficients are only added. This means that all that needs to be looked at is the get function that is called N times. For each time get is called, N nodes will be visited so the complexity is O(N^2).
+
+
+
+

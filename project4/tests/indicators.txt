@@ -1,0 +1,8 @@
+http://www.foo.com/bar
+http://www.bad.com
+g1.exe
+g2.exe
+g3.exe
+g4.exe
+g5.exe
+g6.exe

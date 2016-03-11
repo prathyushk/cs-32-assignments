@@ -1,0 +1,152 @@
+1. There does not seem to be any bugs in my program. I tested it with various telemetry logs and it appears to be working properly.
+2.
+
+bool DiskMultiMap::Iterator::isValid() const
+-----------------------------------
+returns whether the map pointer is nullptr or not because invalid iterators will not point to any map
+
+DiskMultiMap::Iterator& DiskMultiMap::Iterator::operator++()
+--------------------------------------------------------------
+if the iterator is invalid, then it just returns an unchanged version of itself
+otherwise, it reads the current node its pointing to and then follows the next pointer until it reaches a node where the key is the key the iterator is supposed to be searching for. If the iterator moves to a pointer of 0, then it sets its map to nullptr
+Then, this function returns the iterator itself with its updated state
+
+MultiMapTuple DiskMultiMap::Iterator::operator*()
+--------------------------------------------------------------
+returns an empty tuple if the iterator is invalid, otherwise returns the data the iterator is currently pointing to in the form of a tuple
+
+DiskMultiMap::Iterator DiskMultiMap::search(const std::string& key)
+-------------------------------------------------------------------
+returns an invalid iterator if the size of the key is larger than 120
+finds the bucket that the key will be stored in by hashing the key and reads in the offset at that bucket which points to the list that the bucket contains
+while the offset is not 0
+      read in the current node pointed to by the offset
+      if the key of the current node is equal to the key being searched for
+      	 create and return an  iterator that is set to key, pointing to the current offset and has a pointer to this DiskMultiMap
+      set the current offset to the next of the current node
+The key was not found so return an invalid iterator
+
+bool DiskMultiMap::removeNode(DiskNode& n, BinaryFile::Offset& ptr)
+-------------------------------------------------------------------
+save the current next of node n
+read in the current deleted head offset
+set the next of n to the offset of the deleted head
+set the deleted head offset to the offset of n which is ptr
+write the new updated node n at its offset
+write the new deleted head offset to the beginning
+update the ptr variable to the saved value of n's next
+
+BinaryFile::Offset DiskMultiMap::nalloc()
+-----------------------------------------
+read in the current deleted list head offset
+if the deleted list is empty, just return the end of the file
+or else
+   read in the head of the deleted list
+   set the offset to return as the offset of the deleted head
+   set the deleted head to the next of the head of the deleted head
+   write the new deleted head in the file to the beginning
+   return the offset of the node that used to be the deleted head
+
+bool DiskMultiMap::insert(const std::string& key, const std::string& value, const std::string& context)
+-------------------------------------------------------------------------------------------------------
+if the size of any of the parameters is greater than 120, return false because they cannot be inserted
+compute the bucket number that the key should belong to by hashing the key and modding with the total number of buckets
+create a new DiskNode and copy the parameters into it
+read in the head of the list pointed to by the bucket
+set the new node's next to this head offset
+set the new head to the offset returned by nalloc() which returns the next available offset
+write the new head and the new node at the head offset
+
+int DiskMultiMap::erase(const std::string& key, const std::string& value, const std::string& context)
+-----------------------------------------------------------------------------------------------------
+compute the bucket by hashing the key and modding with the total number of buckets
+read in the head offset pointed to by this bucket
+if the head offset is 0, then the list is empty so return false
+read in the current node at the head offset
+while the current node's next is not 0
+      read in the next node at curr.next
+      check if the fields of the next node match the parameters
+      	    remove the next node and update curr's next pointer
+	    update the curr node in file by writing it
+      else
+	    set the current node's offset to the next of the current node
+	    copy the next node's data into the current node
+if the current node is currently not the head, read it in
+if the head's data is equal to the input parameters
+   remove the head and update the offset
+   write the updated head offset in the bucket space
+return whether a node has been removed or not
+
+bool DiskMultiMap::createNew(const std::string& filename, unsigned int numBuckets)
+----------------------------------------------------------------------------------
+store the number of total buckets and creates the file specified by filename and sets it up for use by writing a 0 deleted head offset, the number of buckets and a 0 for each bucket. Also checks to make sure the file was not already open and closes if so
+return false if anything failed return true otherwise
+
+bool DiskMultiMap::openExisting(const std::string& filename)
+------------------------------------------------------------
+open the file and read in the number of buckets in the map. Also checks to make sure the file was not already open and closes if so
+returns false if anything failed return true otherwise
+
+bool IntelWeb::createNew(const std::string& filePrefix, unsigned int maxDataItems)
+----------------------------------------------------------------------------------
+creates a forward associations map and a reverse associations map with a max load factor of 0.75
+returns false if either fails and performs clean up if necessary.
+returns true otherwise
+
+bool IntelWeb::openExisting(const std::string& filePrefix)
+----------------------------------------------------------
+opens the forward associations map and the reverse assocations map and returns false if either fails and performs clean up if necessary
+returns true otherwise
+
+void IntelWeb::close()
+----------------------
+closes both maps
+
+bool IntelWeb::ingest(const std::string& telemetryFile)
+-------------------------------------------------------
+reads in every line from the file and inserts each interaction into a forward associations map and into a reverse associations map.
+The forward associations map maps from->to while reverse maps to->from
+
+unsigned int IntelWeb::prevalence(const std::string& key)
+---------------------------------------------------------
+checks if the prevalences map contains a prevalence for the key, if not, this function looks through the forward and reverse association maps and counts each association and returns it after storing it in the map
+
+bool compareInteractionTuple(const InteractionTuple& f, const InteractionTuple& o)
+----------------------------------------------------------------------------------
+compares the values of f and o, with context having precedence, then from and then to
+
+unsigned int IntelWeb::crawl(const std::vector<std::string>& indicators, unsigned int minPrevalenceToBeGood, std::vector<std::string>& badEntitiesFound,std::vector<InteractionTuple>& badInteractions)
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+creates a queue for a breadth first search
+creates a unordered_set to hold unique malicious entities
+creates a unordered_map that holds unique interaction tuples mapped to with the concatenation of all three tuple values
+push all entities in the indicators vector into the search queue
+while the queue isnt empty
+      take the first item in the queue and make it the key to search for
+      search the key in the forward map
+      search the key in the reverse map
+      if either iterators found something, add the key to the malicious entities set
+      for each item that can be iterated by the forward iterator:
+      	    extract the tuple from the iterator, create an interaction tuple and try to add it to the unique set of interactions
+	    if the prevalence of the associated value with the key is less than the min to be good and the badSet does not contain the value associated with the key
+	       add the value to the search queue and the badSet
+      do the same for the reverse iterator but reverse the key and value for the interaction tuple that is created
+clear the two output vectors and add the values from badSet and badInteractions map
+sort both vectors with the badInteractions one being sorted with the compareInteractionTuple function
+return the size of the badSet
+
+bool IntelWeb::purge(const std::string& entity)
+-----------------------------------------------
+search the entity in the forward associations map
+search the entity in the reverse associations map
+create a queue of tuples to delete
+for each item that can be iterated by the forward iterator
+    deference the iterator and push it into the queue
+do the same for the reverse iterator but switch the key and value to preserve to and from
+for every item in the queue
+      reverse the tuple from the forward map
+      reverse the tuple from the reverse map with key and value switched
+return whether something has been deleted or not
+
+3.
+Every method should satisfy the big O requirement because they were designed with those especially in mind.
