@@ -1,0 +1,154 @@
+A1.
+
+Actor
+----------------------------
+virtual void doSomething() - pure virtual function that controls what this actor does during ecah tick. Pure virtual because a generic actor cannot doSomething and subclass must specify.
+void removeSelf() - sets a boolean to indicate that this actor should be removed from the world. This is not virtual because all it does is control a state variable.
+bool toRemove() - returns whether the actor should be removed or not. This is not virtual because all it does is return a state variable.
+std::string getType() - returns the type of the actor which is a string of its name.
+
+
+Mortal : Actor
+----------------------------
+int getHealth() - returns the health of the Mortal. Not virtual because its only there to control a state variable
+void setHealth(int h) - sets the health of the Mortal to h. Not virtual because only there to control a state variable
+virtual bool takeDamage(int dmg) - determines what happens when dmg damage is taken by actor. Virtual because subclasses should be able to change what happens when they take damage.
+
+FrackMan : Mortal
+----------------------------
+virtual void doSomething() - does everything the spec says it should do(process input and make movements/shoot water/drop nuggets/etc). Virtual because it comes from Actor
+int getSquirts() - returns the number of squirts the FrackMan has.
+int getSonar() - returns the number of sonar charges the FrackMan has.
+int getGold() - returns the number of gold nuggets the FrackMan has.
+void gotGold() - increments number of gold nuggets
+void gotSonar() - increments number of sonar charges
+void gotWater() - increments number of squirts by 5
+
+Protestor : Mortal
+----------------------------
+virtual void doSomething() - does everything the spec says it should do(move/attack/leave field/etc). Virtual because it comes from Actor
+void move() - functionality that causes the protestor to move according to the spec
+bool leaveField() - performs leaveField functionality if it is supposed to and returns whether it is supposed to or not
+bool attack() - attacks the FrackMan if it can and returns whether it attacked or not
+virtual void gotGold() - does what the protestor needs to when it gets gold. Virtual because subclasses should be able to do different things(e.g. HardcoreProtestor just waits). The default functionality is store that it needs to leave the field.
+int getRestTicks() - returns the number of rest ticks that have passed
+int setRest(int s) - sets the number of rest ticks to wait before moving to s
+void decRest() - decrements the number of rest ticks.
+virtual bool takeDamage(int dmg) - does everything the spec says it should do when the protestor is annoyed(takes damage/leave field if its dead and play sound and increase score appropriately/stun if not dead). Virtual because its inherited from Mortal.
+
+HardcoreProtestor : Protestor
+-----------------------------
+virtual void gotGold() - waits for a random number of ticks and gives points. Virtual because it is derived from Protestor
+virtual void doSomething() - performs the move, attack and leaveField that a regular protestor performs but also performs the cell phone signal tracking on top of it
+
+Pickup : Actor
+-----------------------------
+bool updateLife() - decrements lifetime of pickup if it has a finite lifetime
+bool frackManFind() - if its hidden it checks whether the frackman found it and returns whether its found or not
+bool isFound() - return state variable of whether it has been found
+void found() - pickup has been found, update state
+
+OilBarrel/GNugget/SKit/WRefill : Pickup
+-----------------------------
+virtual void doSomething() - check pickup and get picked up
+
+Squirt : Actor
+-----------------------------
+virtual void doSomething() - checks for collisions and whether it can damage a protestor
+
+Boulder : Actor
+-----------------------------
+virtual void doSomething() - perform actions based on its state and update its state
+
+Dirt : Actor
+-----------------------------
+virtual void doSomething() - does nothing
+
+StudentWorld
+-----------------------------
+virtual int init() - creates the world depending on the level
+virtual int move() - updates the state of all actors, adds new items and protestors to map
+virtual void cleanUp() - clears all the dynamically allocated memory for the specific level
+void calculatePathToPlayer() - creates a map of directions leading to the position of the player
+void calculatePathToLeave() - creates a map of directions leading to the position of the exit point
+void setDisplayText() - uses a stringstream to create a formatted string to display the game text as in the example program
+int distanceToPlayer() - uses the calculated path to find distance from some point on the path to the player
+GraphObject::Direction dirToPlayer(int x, int y) - returns the direction an actor must move to be on a path to the player
+GraphObject::Direction dirToMove(int x, int y) - returns the direction an actor must move to be on a path to the exit point(60,60)
+bool removeDirt(int x, int y) - removes the dirt at a specified x,y and recalculates a path to the exit point
+void barrelObtained() - updates state of game when a barrel is obtained
+bool canMove(int x, int y) - returns whether a certain x,y coordinate can be moved to by an actor
+bool actorTypeWithin(int x, int y, std::string type, int distance) - returns whether there is an actor of a certain type within a certain distance from the specified x,y
+bool dirtExists(int x, int y) - returns whether there is dirt at the x,y position
+int spriteOverlaps(int x, int y, std::string type) - checks if the bounding box of a sprite at x,y overlaps the bounding box of another sprite of a certain type
+bool dirtExistsSprite(int x, int y) - checks if any dirt exists in the space of a sprite at a point x,y
+bool dirtCoveredSprite(int x, int y) - returns whether the space of a sprite at x,y is completely covered with dirt
+void addActor(Actor* a) - adds a to the private vector of actors
+bool squirtDamageProtestors(int x, int y) - checks if any protestors are within hit radius for a squirt at x,y and damages them if so
+void sonarUsed(int x, int y) - reveals oil barrels and gold nuggets in a radius of 12 from the specified x,y
+void boulderDamageMortals(int x, int y) - kills mortals that are within the range of a falling boulder
+bool checkProtestorGold(int x, int y) - checks whether a protestor can pick up gold or not
+GraphObject::Direction opposite(GraphObject::Direction dir) - returns a direction that is the opposite of dir
+std::vector<Actor*>* getActorsWithin(int x, int y, int distance = 0) - returns a vector of actors that are within a certain distance to an x,y. Helper function
+Actor* getActorTypeWithin(int x, int y, std::string type, int distance = 0) - returns an actor of a certain type in a certain distance to an x,y. Helper function
+    
+2. I was able to complete all the functionality for the project and I was able to fix all the bugs that I could find.
+3. It was ambiguous on what to do for the game stat text because the example program's formatting was slightly different from the spec so I just imitated the program.
+In the example program, the protestors wait a certain number of ticks before moving or doing anything after they shout but the spec does not say anything about this. I made the protestors stop moving as long as the frackMan is right in front of them but not freeze completely. In addition, the spec says that the FrackMan should not be able to move if it would put him within 3 units from the center of a boulder. However, the example program seems to do this check from the bottom left of the boulder so that is what I imitated. The spec also did not say anything about the specific positioning of the items in the oil field but the example program seemed to only place objects in the space there is dirt and nothing in the mineshaft/above the dirt field so I just imitated the example program.
+
+4.
+StudentWorld
+-----------------
+All of the StudentWorld functions were tested by testing the actor functions because they merely serve as functions to help the actors perform what they need to not including the setup functions. The setup functions were tested by just playing the game and making sure everything was where it was supposed to be.
+
+Actor
+-----------------
+The actor cannot be directly tested because it is an abstract class so it was tested by testing its derived classes. All of the functionality in actor is essential to the function of the game and it would be quite obvious if something didn't work while playing the game
+
+Mortal
+-----------------
+The mortal class also cannot be directly tested because it is also abstract so it was tested by testing the mortality of FrackMan and the protestors. If the class was not working, none of the mortals would die or they would never be alive so just playing the game made it obvious whether this class was working or not.
+
+FrackMan
+-----------------
+FrackMan was tested by pressing all of the buttons that make the FrackMan perform actions like Tab, Space, Z and the direction keys. All of the corner cases were tested by playing the game such as movement into the edge of the map or a boulder, removal of dirt, sonar testing, water squirt shooting, etc. For water squirt shooting I made sure that it was only generated when there was space by standing in places where a water should not be generated and trying to generate one. Dropping of the gold nugget was also tested in a similar fashion.
+
+Protestor
+-----------------
+Protestor was tested by observing the protestor in all of its cases specified by the spec. All the functionality such as leaving the field, attacking, bribing, etc. were tested by playing the game extensively.
+
+HardcoreProtestor
+-----------------
+HardcoreProtestor was just built on top of protestor so just the extra functionality was tested. The player tracking was tested by moving the player around to different places and seeing how the tracking worked in addition to the increases in range depending on the level number. The gold pickup new functionality was also tested by trying it out in game.
+
+Pickup
+-----------------
+Pickup is an abstract base class so it was tested by testing its subclasses. If all of the functionality of the subclasses worked, then that means that this pickup class works as intended.
+
+OilBarrel
+-----------------
+This class was tested by testing the pickup and discovery of oil barrels in game. If it works properly, it would reveal itself when the FrackMan is within 4 units and would get picked up if he is within 3. It also has an infinite lifetime so it was checked to make sure it would never disappear. Also it was tested to see if the state of the level would correctly update when a barrel was picked up.
+
+GNugget
+-----------------
+I tested both the functionality with the bribing and the initial picking up by the FrackMan. I tested this by using the item frequently and playing the game to the highest level I could make it. All of the functionality worked because I observed it to work.
+
+SKit
+-----------------
+The sonar kit was tested by testing the pickup, the finite lifetime and the discovering of hidden object in a radius of 12 from the FrackMan when used. This was tested by just playing the game normally and paying special attention the sonar kit.
+
+WRefill
+-----------------
+This was also tested by playing the game normally and making sure that no water spawned where this is dirt and that it spawned on approximately the correct probability. I also tested the pickup to make sure it works as it should. The limited lifetime was also tested by making sure they disappear.
+
+Squirt
+-----------------
+Squirt was tested by shooting a lot of squirts and making sure they damage the protestors, get destroyed when they hit rocks or dirt and if they are generated in the correct circumstances by trying a variety of circumstances and trying all of the corner cases.
+
+Boulder
+-----------------
+Boulders were tested by placing them in all of the stages and seeing if they worked as according to the spec. They were stable until all 4 dirts below were removed, no less and then it waits 30 ticks before falling and then it falls and annoys anything in its way until it leaves the map or hits more dirt or another boulder. Then it disappears.
+
+Dirt
+-----------------
+Dirt was tested by making sure it could be removed and sufficiently act as an obstacle.
